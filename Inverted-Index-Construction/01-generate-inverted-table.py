@@ -1,3 +1,5 @@
+# 建立反向索引表
+
 from ckiptagger import WS
 import json
 import sqlite3
@@ -39,7 +41,7 @@ for index in tqdm(range(len(data) // batch_size)):
     for i in range(batch_size):
         for key in text[i*2] + text[i*2+1]:
             if key not in delimiter_set:
-                cursor.execute('INSERT INTO inverted_table(term, id) VALUES(?, ?)',
+                cursor.execute('INSERT INTO inverted_table(term, aid) VALUES(?, ?)',
                             (key, data[index * batch_size + i]['id']))
     conn.commit()
 
