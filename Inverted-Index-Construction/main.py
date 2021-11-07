@@ -1,10 +1,11 @@
-
 from ckiptagger import WS
 import json
 import sqlite3
 from tqdm import tqdm
 
-# 下載模型
+# Reference: https://github.com/ckiplab/ckiptagger/wiki/Chinese-README
+
+# If you want to download models for ckiptagger
 # data_utils.download_data_gdown("./")
 
 ws = WS("./data")
