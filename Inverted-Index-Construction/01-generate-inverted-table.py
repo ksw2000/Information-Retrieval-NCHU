@@ -19,12 +19,12 @@ database = './table.db'
 conn = sqlite3.connect(database)
 cursor = conn.cursor()
 
-delimiter_set = {",", "，", 
-                 ".", "。", 
-                 ":", "：", 
-                 "！", "!", 
-                 "；", ";", 
-                 "?", "？", 
+delimiter_set = {",", "，",
+                 ".", "。",
+                 ":", "：",
+                 "！", "!",
+                 "；", ";",
+                 "?", "？",
                  "（", "）",
                  "(", ")",
                  "\"", "'"}
@@ -42,7 +42,7 @@ for index in tqdm(range(len(data) // batch_size)):
         for key in text[i*2] + text[i*2+1]:
             if key not in delimiter_set:
                 cursor.execute('INSERT INTO inverted_table(term, aid) VALUES(?, ?)',
-                            (key, data[index * batch_size + i]['id']))
+                               (key, data[index * batch_size + i]['id']))
     conn.commit()
 
 cursor.close()
