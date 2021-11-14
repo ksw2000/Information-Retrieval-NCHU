@@ -27,7 +27,10 @@
 
 ## 5.21s
 ![](https://i.imgur.com/N5jl0Ue.png)
+
+```
 ラブライブ|super|star site:www.youtube.com intext:無料
+```
 
 ## 4.87s
 ![](https://i.imgur.com/xOvvN3N.png)
