@@ -5,6 +5,7 @@ from ckiptagger import WS
 import json
 import sqlite3
 from tqdm import tqdm
+import re
 
 # Reference: https://github.com/ckiplab/ckiptagger/wiki/Chinese-README
 
@@ -23,18 +24,20 @@ cursor.execute('DELETE FROM inverted_table')
 conn.commit()
 
 batch_size = 200
+reg = "[\s\-，.。\:：！!；;\?？（）\(\)\"\'《》〈〉．～—─\=「」『』、”“·／\#\[\]]"
+
 for index in tqdm(range(len(data) // batch_size)):
     input = []
     for i in range(batch_size):
-        input.append(data[index * batch_size + i]['articles'])
-        input.append(data[index * batch_size + i]['title'])
+        input.append(re.sub(reg, " ", data[index * batch_size + i]['articles']))
+        input.append(re.sub(reg, " ", data[index * batch_size + i]['title']))
 
     text = ws(input)
 
     for i in range(batch_size):
         pos = 0
         for key in text[i*2] + text[i*2+1]:
-            key = key.strip(" ,，.。:：！!；;?？（）()\"'《》〈〉．～—─=「」『』、”“·／#")
+            key = key.strip()
             if key != "":
                 cursor.execute('INSERT INTO inverted_table(term, aid, pos) VALUES(?, ?, ?)',
                                (key, data[index * batch_size + i]['id'], pos))

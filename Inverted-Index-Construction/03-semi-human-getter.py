@@ -4,7 +4,7 @@
 import json
 from ckiptagger import data_utils, WS
 import sqlite3
-database = './table.db'
+database = './table-v2.db'
 conn = sqlite3.connect(database)
 cursor = conn.cursor()
 
@@ -17,13 +17,11 @@ keywords = ws(inputs, sentence_segmentation=False)
 
 print(keywords)
 
-database = './table-v2.db'
 conn = sqlite3.connect(database)
 cursor = conn.cursor()
 
 # 資料庫搜尋時必尋處理連續性問題
 # 因為可能出現文字分割後關鍵字前後不連續的問題
-# 另外，由於老師給的答案是 index_id 不是 article_id 所以回傳 index_id
 # 要注意，sqlite 與一般資料庫不同，本身有區分大小寫，因此在查找時因加入 COLLATE NOCASE
 
 my_answers = []

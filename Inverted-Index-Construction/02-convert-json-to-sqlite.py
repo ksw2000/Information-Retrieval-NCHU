@@ -5,7 +5,7 @@ import json
 with open('./wiki_2021_10_05_50000.json', 'r', encoding="utf-8") as f:
     data = json.load(f)
 
-database = './table.db'
+database = './table-v2.db'
 conn = sqlite3.connect(database)
 cursor = conn.cursor()
 cursor.execute('DELETE FROM data')
