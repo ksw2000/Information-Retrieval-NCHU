@@ -9,7 +9,8 @@ import re
 
 # Reference: https://github.com/ckiplab/ckiptagger/wiki/Chinese-README
 
-# If you want to download models for ckiptagger
+# Download models for ckiptagger
+# from ckiptagger import data_utils
 # data_utils.download_data_gdown("./")
 
 ws = WS("./data")
