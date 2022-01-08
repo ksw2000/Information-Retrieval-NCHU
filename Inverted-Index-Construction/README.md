@@ -32,7 +32,7 @@ gdown --id 1rQnbaOiqoN40AzHVq_IrRW4ki-rFPRxZ
 ## 超級爆力法
 
 1. 直接將 json 檔轉成 sqlite 資料庫 *02-convert-json-to-sqlite.py*
-2. 利用 SQL 抓取 \
+2. 利用 SQL 抓取
 
 + 優點：速度意外地還滿快的 recall rate 很高
 + 缺點：會有多抓的情形發生
