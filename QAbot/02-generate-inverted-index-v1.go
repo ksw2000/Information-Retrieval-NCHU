@@ -35,6 +35,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"sort"
 	"strings"
 	"sync"
 )
@@ -46,7 +47,7 @@ type el struct {
 }
 
 func main() {
-	// wating threads
+	// wating goroutines
 	var wg sync.WaitGroup
 
 	// (1) read directory and generate fileNames list
@@ -60,8 +61,9 @@ func main() {
 	for _, f := range files {
 		fileNames = append(fileNames, f.Name())
 	}
+	sort.Strings(fileNames)
 
-	// (2) read files by fileNames list and generate a map
+	// (2) read files from fileNames list and generate a map
 	// key: word
 	// val: entry including aid and a counter
 	invertedIndexList := []map[string]*el{}
@@ -127,10 +129,10 @@ func main() {
 			log.Fatal(err)
 		}
 
-		// (3) if `f` is the end of batch, write result to file at other coroutine
+		// (3) if `f` is the end of batch, write result to file at other goroutine
 		if i%batchSize == batchSize-1 || i == len(fileNames)-1 {
 			fmt.Sscanf(f, "output-%d-%d.txt", &tmp, &endAid)
-			fmt.Printf("writing ./inverted-index/%07d-%07d.txt at other coroutine. Batch: %d\n", startAid, endAid, batchCounter)
+			fmt.Printf("writing ./inverted-index/%07d-%07d.txt at other goroutine. Batch: %d\n", startAid, endAid, batchCounter)
 			go func(batchCounterCopy, startAidCopy, endAidCopy int) {
 				defer wg.Done()
 				defer fmt.Printf("Finish batch: %d\n", batchCounterCopy)
@@ -142,7 +144,7 @@ func main() {
 				}
 				defer file.Close()
 
-				// fetch invertedIndex that is belong to this coroutine from invertedIndexList
+				// fetch invertedIndex that is belong to this goroutine from invertedIndexList
 				invertedIndex := invertedIndexList[batchCounterCopy]
 				for k, v := range invertedIndex {
 					fmt.Fprintf(file, "%s ", k)
@@ -158,6 +160,6 @@ func main() {
 			batchCounter += 1
 		}
 	}
-	// wait all coroutines done
+	// wait all goroutines done
 	wg.Wait()
 }
