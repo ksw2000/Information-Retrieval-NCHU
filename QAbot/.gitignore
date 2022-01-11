@@ -1,0 +1,8 @@
+data.zip
+data/
+_*
+*.db
+wiki_2021_08_05_1215639.json
+*.exe
+ws-result/
+inverted-index/
