@@ -1,5 +1,6 @@
-## QA機器人評分系統說明
+# QA機器人
 
+## 評分系統說明
 - 新增之`questions_example.json`為提供測試之20題範例，其他題目皆以此邏輯出題。
 - 網站已上線提供測試，共25題，一題4分滿分100分，正式測驗當天會提供200題，一題0.5分。
 - 請注意自己程式輸出之答案，**格式須符合規定，系統才能正確計算分數，demo當天亦如此。**
@@ -10,7 +11,7 @@
 
 - 評分網站: <https://ir.nlpnchu.org/scoring/>
 
-#### JSON讀取說明
+## JSON讀取說明
 - 例如題目之格式為：
 ```json
  {"Question":"中華民國第14任總統，民主進步黨第16屆黨主席，同時也是台灣歷史上首位女性元首，她是:" 
@@ -40,7 +41,7 @@ print(JsonList[0]['Question'])
 中華民國第14任總統，民主進步黨第16屆黨主席，同時也是台灣歷史上首位女性元首，她是:
 ```
 
-#### 繳交答案網站使用說明
+## 繳交答案網站使用說明
 - 第一格填入學號，第二格填入你程式跑出的答案
 - **答案請使用規定之JSON格式，例如: 第一題答案A，第二題答案B，第三題答案C，JSON格式應為 ["A", "B", "C"]**
 
@@ -52,3 +53,17 @@ print(JsonList[0]['Question'])
 5. ijson: https://github.com/isagalaev/ijson
    使用ijson搜尋工具，ijson主要是使用在json過大而不能夠全部loading進記憶體時，採用stream的方式讀取json檔。
 	python3 ijsonSearch.py 查詢的json檔名 查詢的目標類型 查詢目標名稱
+
+## 我們的作法
+
++ ./
+   + ./convert-to-db
+   + ./inverted-index
+   + ./ws-result
+
+1. 利用 Colab `01-word-segmentation.ipynb` 取得斷詞，並將檔案存放於 `./ws-result`
+2. 利用 `02-generate-inverted-index-v2.go` 將斷詞結果製作成反向索引
+   + 若記憶體太小可以用 `v1` 進行反向索引製作再自行 merge
+   + `v2` 直接將第 1 步結果匯整成反向索引並存於 `./inverted-index`
+3. 將結果轉為資料庫形式，方便查尋 `03-convert-to-db.cmd`，原始碼為於 `./convert-to-db` 中
+4. 透過 `04-get-answer.ipynb` 計算來求解
