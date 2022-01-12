@@ -1,11 +1,11 @@
-// After word segmentation, we have a lot of files like:
+// After word segmentation, we have a lot of files which are consisted of:
 
 // aid1 word1 word2 word3
 // aid2 word1 word2 word3 word4
 // aid3 word1
 
 // Try to create inverted-index files
-// version 2 does not write frequency into files, as well as version1
+// version 2 does not write frequency into files, as well as version 1
 // version 2 neither uses multiple goroutines nor uses batch
 
 // CPU: Intel(R) Core(TM) i5-8250U CPU @ 1.60GHz
@@ -13,7 +13,7 @@
 // Disk: CT500MX500SSD
 
 // - inverted-index/
-//		- 0000000-1215638.txt (About 1GB)
+//		- 0000000-1215638.txt (About 1GB took 13min)
 
 package main
 
@@ -25,16 +25,18 @@ import (
 	"os"
 	"sort"
 	"strings"
+	"time"
 )
 
 type el struct {
 	aid  int
-	num  int
 	next *el
 }
 
 func main() {
-	// (1) read directory and generate fileNames list
+	startTime := time.Now()
+
+	// STEP1: read directory and generate fileNames list
 	files, err := ioutil.ReadDir("./ws-result")
 	if err != nil {
 		log.Fatal(err)
@@ -47,28 +49,20 @@ func main() {
 	}
 	sort.Strings(fileNames)
 
-	// (2) read files from fileNames list and generate a map
-	// key: word
-	// val: entry including aid and a counter
+	// STEP2: read files from fileNames list and generate a map
+	// key: word val: entry including aid
 	invertedIndex := map[string]*el{}
-	// record the start aid and end aid
-	var startAid, endAid, tmp int
-
-	for i, f := range fileNames {
+	for _, f := range fileNames {
 		fmt.Println("processing", f)
 
-		if i == 0 {
-			fmt.Sscanf(f, "output-%d-%d.txt", &startAid, &tmp)
-		}
-
-		// (1) open f
+		// open f
 		file, err := os.Open("./ws-result/" + f)
 		if err != nil {
 			log.Fatal(err)
 		}
 		defer file.Close()
 
-		// (2) read f line by line
+		// read f line by line
 		scanner := bufio.NewScanner(file)
 		buf := make([]byte, 0, 64*1024)
 		scanner.Buffer(buf, 1024*1024)
@@ -76,28 +70,26 @@ func main() {
 			var aid int
 
 			// read every words in single line
-			frequency := map[string]int{}
+			dict := map[string]interface{}{}
 			for i, word := range strings.Fields(scanner.Text()) {
 				if i != 0 {
-					frequency[word] += 1
+					dict[word] = nil
 				} else {
 					fmt.Sscanf(word, "%d", &aid)
 				}
 			}
 
 			// generate invertedIndex
-			for word, num := range frequency {
+			for word := range dict {
 				e, ok := invertedIndex[word]
 				if ok {
 					e.next = &el{
 						aid:  aid,
-						num:  num,
 						next: e.next,
 					}
 				} else {
 					invertedIndex[word] = &el{
 						aid:  aid,
-						num:  num,
 						next: nil,
 					}
 				}
@@ -107,27 +99,36 @@ func main() {
 		if err := scanner.Err(); err != nil {
 			log.Fatal(err)
 		}
-
-		// (3) write result to file at other coroutine
-		if i == len(fileNames)-1 {
-			fmt.Sscanf(f, "output-%d-%d.txt", &tmp, &endAid)
-			fmt.Printf("writing ./inverted-index/%07d-%07d.txt at other coroutine.\n", startAid, endAid)
-			// open file (create) About 1GB
-			file, err := os.OpenFile(fmt.Sprintf("F:/%07d-%07d.txt", startAid, endAid), os.O_RDWR|os.O_CREATE, 0755)
-			if err != nil {
-				log.Print("open file error")
-			}
-			defer file.Close()
-
-			for k, v := range invertedIndex {
-				fmt.Fprintf(file, "%s ", k)
-				for current := v; current != nil; current = current.next {
-					fmt.Fprintf(file, "%d ", current.aid)
-				}
-				fmt.Fprintf(file, "\n")
-				// clear cache
-				delete(invertedIndex, k)
-			}
-		}
 	}
+    
+    // STEP3: Write result
+	// generate file name
+	var tmp, endAid int
+	fmt.Sscanf(fileNames[len(fileNames)-1], "output-%d-%d.txt", &tmp, &endAid)
+	generateFile := fmt.Sprintf("./inverted-index/%07d-%07d.txt", 0, endAid)
+	fmt.Printf("writing %s\n", generateFile)
+
+	// open file
+	file, err := os.OpenFile(generateFile, os.O_RDWR|os.O_CREATE, 0755)
+	if err != nil {
+		log.Print("open file error")
+	}
+	defer file.Close()
+
+	var next, current *el
+	for k, v := range invertedIndex {
+		fmt.Fprintf(file, "%s ", k)
+		for current = v; current != nil; current = next {
+			fmt.Fprintf(file, "%d ", current.aid)
+			// for GC
+			next = current.next
+            current.next = nil
+		}
+		fmt.Fprintf(file, "\n")
+		// clear cache
+		delete(invertedIndex, k)
+	}
+
+	elapsed := time.Since(startTime)
+	fmt.Println("Done", elapsed)
 }
