@@ -5,15 +5,14 @@
 // aid3 word1
 
 // Try to create inverted-index files
-// version 2 does not write frequency into files, as well as version 1
-// version 2 neither uses multiple goroutines nor uses batch
+// version 3 writes frequency into files
 
 // CPU: Intel(R) Core(TM) i5-8250U CPU @ 1.60GHz
-// RAM: 19.9 GB (記憶體這麼大94爽 ^_^)
+// RAM: 19.9 GB (Need RAM about 7GB)
 // Disk: CT500MX500SSD
 
 // - inverted-index/
-//		- 0000000-1215638.txt (About 1GB took 13min)
+//		- 0000000-1215638.txt (About 1.1GB took 10min)
 
 package main
 
@@ -23,21 +22,20 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path"
 	"sort"
 	"strings"
 	"time"
 )
 
-type el struct {
-	aid  int
-	next *el
-}
+const readDir = "../ws-result-level1/"
+const outputDir = "./"
 
 func main() {
 	startTime := time.Now()
 
 	// STEP1: read directory and generate fileNames list
-	files, err := ioutil.ReadDir("./ws-result")
+	files, err := ioutil.ReadDir(readDir)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -51,12 +49,12 @@ func main() {
 
 	// STEP2: read files from fileNames list and generate a map
 	// key: word val: entry including aid
-	invertedIndex := map[string]*el{}
+	invertedIndex := map[string][]int{}
 	for _, f := range fileNames {
 		fmt.Println("processing", f)
 
 		// open f
-		file, err := os.Open("./ws-result/" + f)
+		file, err := os.Open(path.Join(readDir, f))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -81,18 +79,7 @@ func main() {
 
 			// generate invertedIndex
 			for word := range dict {
-				e, ok := invertedIndex[word]
-				if ok {
-					e.next = &el{
-						aid:  aid,
-						next: e.next,
-					}
-				} else {
-					invertedIndex[word] = &el{
-						aid:  aid,
-						next: nil,
-					}
-				}
+				invertedIndex[word] = append(invertedIndex[word], aid)
 			}
 		}
 
@@ -105,7 +92,7 @@ func main() {
 	// generate file name
 	var tmp, endAid int
 	fmt.Sscanf(fileNames[len(fileNames)-1], "output-%d-%d.txt", &tmp, &endAid)
-	generateFile := fmt.Sprintf("./inverted-index/%07d-%07d.txt", 0, endAid)
+	generateFile := path.Join(outputDir, fmt.Sprintf("%07d-%07d.txt", 0, endAid))
 	fmt.Printf("writing %s\n", generateFile)
 
 	// open file
@@ -115,18 +102,12 @@ func main() {
 	}
 	defer file.Close()
 
-	var next, current *el
 	for k, v := range invertedIndex {
-		fmt.Fprintf(file, "%s ", k)
-		for current = v; current != nil; current = next {
-			fmt.Fprintf(file, "%d ", current.aid)
-			// for GC
-			next = current.next
-			current.next = nil
+		fmt.Fprintf(file, "%s %d ", k, len(v))
+		for _, aid := range v {
+			fmt.Fprintf(file, "%d ", aid)
 		}
 		fmt.Fprintf(file, "\n")
-		// clear cache
-		delete(invertedIndex, k)
 	}
 
 	elapsed := time.Since(startTime)

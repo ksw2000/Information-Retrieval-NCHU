@@ -60,13 +60,11 @@ print(JsonList[0]['Question'])
    + convert-to-db/
    + inverted-index/
    + word-frequency/
-   + ws-result/
+   + ws-result-level1/
 
 1. 利用 Colab `01-word-segmentation.ipynb` 取得斷詞，並將檔案存放於 `./ws-result`
-2. 利用 `02-generate-inverted-index-v2.go` 將斷詞結果製作成反向索引
-   + 若記憶體太小可以用 `v1` 進行反向索引製作再自行 merge
-   + `v2` 直接將第 1 步結果匯整成反向索引並存於 `./inverted-index`
+2. 利用 `02-inverted-index.cmd` 將斷詞結果製作成反向索引同時計算詞頻，其對應之原始碼位於 `./inverted-index` 中
 3. 將結果轉為資料庫形式，方便查尋。可直接呼叫 `03-convert-to-db.cmd`，其對應之原始碼位於 `./convert-to-db` 中
 4. 透過 `04-get-answer.ipynb` 計算來求解，該版本不考慮詞頻
-5. 透過 `05-word-frequency.cmd` 生成詞頻表，其原始碼位於 `./word-frequency` 中
-6.  透過 `06-get-answer-boost.ipynb` 計算答案，該版本考慮詞頻，頻率少前有重複的詞會有較高的分數
+5. 透過 `05-get-answer-boost.ipynb` 計算答案，該版本考慮詞頻，頻率少的詞會有較高的分數
+6. `06-analyze-word-frequency.ipynb` 分析詞頻

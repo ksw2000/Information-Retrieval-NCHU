@@ -4,5 +4,6 @@ _*
 *.db
 wiki_2021_08_05_1215639.json
 *.exe
-ws-result/
-inverted-index/
+ws-result*/
+inverted-index/*.txt
+*.zip
