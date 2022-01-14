@@ -100,8 +100,8 @@ func main() {
 			log.Fatal(err)
 		}
 	}
-    
-    // STEP3: Write result
+
+	// STEP3: Write result
 	// generate file name
 	var tmp, endAid int
 	fmt.Sscanf(fileNames[len(fileNames)-1], "output-%d-%d.txt", &tmp, &endAid)
@@ -122,7 +122,7 @@ func main() {
 			fmt.Fprintf(file, "%d ", current.aid)
 			// for GC
 			next = current.next
-            current.next = nil
+			current.next = nil
 		}
 		fmt.Fprintf(file, "\n")
 		// clear cache
